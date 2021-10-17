@@ -1,16 +1,11 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs";
-    neo4j-d.url = "/home/artem/nixos_main/desktop/neo4j-desktop/default.nix";
-    neo4j-d.flake = false;
   };
 
-  outputs = { self, nixpkgs, neo4j-d, ... }:
+  outputs = { self, nixpkgs, ... }:
     let
       pkgs = import nixpkgs { system = "x86_64-linux";
-      config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [
-             "neo4j-desktop"
-           ];
       };
     in
       {
@@ -19,7 +14,9 @@
 
           buildInputs = with pkgs; [
             docker
-            dotnet-sdk_3
+            (with dotnetCorePackages; combinePackages [ dotnet-sdk_3 dotnet-sdk_5 ])
+            #dotnet-sdk_3
+            #dotnet-sdk_5
           ];
           shellHook = ''
           '';
