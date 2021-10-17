@@ -1,0 +1,39 @@
+{
+  "nodes": {
+    "neo4j-d": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-eS9bZLECJae9oD4D7NgX0KVuUlC3CtehtqeWPIA5hDg=",
+        "path": "/home/artem/nixos_main/desktop/neo4j-desktop/default.nix",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/artem/nixos_main/desktop/neo4j-desktop/default.nix",
+        "type": "path"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1634436779,
+        "narHash": "sha256-D/nrXTWpe1bPIjFy85sgiLHYqu+AeaC6v5/+KlA9PRg=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "9aeeb7574fb784eaf6395f4400705b5f619e6cc3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "neo4j-d": "neo4j-d",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
