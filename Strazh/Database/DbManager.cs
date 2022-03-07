@@ -9,7 +9,7 @@ namespace Strazh.Database
 {
     public static class DbManager
     {
-        private const string CONNECTION = "neo4j://localhost:7687";
+        private const string CONNECTION = "bolt://localhost:7687";
 
         public static async Task InsertData(IList<Triple> triples, CredentialsConfig credentials, bool isDelete)
         {
