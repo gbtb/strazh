@@ -2,6 +2,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
+using Microsoft.Build.Locator;
 using Strazh.Analysis;
 
 namespace Strazh
@@ -11,6 +12,7 @@ namespace Strazh
 
         public static async Task Main(params string[] args)
         {
+            MSBuildLocator.RegisterDefaults();
 #if DEBUG
             // There is an issue with using Neo4j.Driver 4.2.0
             // System.IO.FileNotFoundException: Could not load file or assembly '4.2.37.0'. The system cannot find the file specified.
