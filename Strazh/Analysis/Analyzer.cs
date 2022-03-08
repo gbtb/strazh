@@ -77,14 +77,17 @@ namespace Strazh.Analysis
                     triples.Add(new TripleDependsOnProject(projectNode, node));
                 }
 
-                foreach (var x in project.MetadataReferences.ToList())
+                var visitor = new MetadataReferenceVisitor(projectNode, triples);
+                foreach (var x in project.MetadataReferences)
                 {
-                    if (x is not CompilationReference cref)
-                        continue;
-                    
-                    var version = cref.Compilation.Assembly.Identity.Version.ToString();
-                    var node = new PackageNode(cref.Display, cref.Compilation.AssemblyName, version);
-                    triples.Add(new TripleDependsOnPackage(projectNode, node));
+                    try
+                    {
+                        visitor.Visit(x);
+                    }
+                    catch (ArgumentException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
                 }
 
                 Console.WriteLine($"Analyzing Project tier complete.");
