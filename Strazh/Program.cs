@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Build.Locator;
 using Strazh.Analysis;
@@ -47,7 +48,11 @@ namespace Strazh
             rootCommand.Add(optionProjects);
 
             rootCommand.Handler = CommandHandler.Create<string, string, string, string, string[]>(BuildKnowledgeGraph);
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             await rootCommand.InvokeAsync(args);
+            stopwatch.Stop();
+            Console.WriteLine($"Elapsed: {stopwatch.Elapsed}");
         }
 
         private static async Task BuildKnowledgeGraph(string credentials, string tier, string delete, string solution, string[] projects)
