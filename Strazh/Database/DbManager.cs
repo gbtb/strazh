@@ -18,7 +18,7 @@ namespace Strazh.Database
                                           "ON CREATE SET {3} " +
                                           "ON MATCH SET {3} MERGE (a)-[:{4}]->(b);";
         
-        public static async Task InsertData(IList<Triple> triples, CredentialsConfig credentials, bool isDelete)
+        public static async Task InsertData(IList<ITriple> triples, CredentialsConfig credentials, bool isDelete)
         {
             if (credentials == null)
             {

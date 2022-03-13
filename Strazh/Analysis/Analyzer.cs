@@ -54,7 +54,7 @@ namespace Strazh.Analysis
             }
         }
 
-        private static async Task<IList<Triple>> AnalyzeProject(int index, Solution? solution, Project project, Tiers mode)
+        private static async Task<IList<ITriple>> AnalyzeProject(int index, Solution? solution, Project project, Tiers mode)
         {
             Console.WriteLine($"Project #{index}:");
             var root = GetRoot(project.FilePath);
@@ -62,7 +62,7 @@ namespace Strazh.Analysis
             var projectName = GetProjectName(project.Name);
             Console.WriteLine($"Analyzing {projectName} project...");
 
-            var triples = new List<Triple>();
+            var triples = new List<ITriple>();
             if (mode is Tiers.All or Tiers.Project && solution != null)
             {
                 Console.WriteLine($"Analyzing Project tier...");

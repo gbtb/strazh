@@ -1,97 +1,75 @@
 namespace Strazh.Domain
 {
-    public abstract record Triple(Node NodeA, Node NodeB, Relationship Relationship)
+    public interface ITriple
     {
-        //public override string ToString()
-        //    => $"MERGE (a:{NodeA.Label} {{ pk: \"{NodeA.Pk}\" }}) ON CREATE SET {NodeA.Set("a")} ON MATCH SET {NodeA.Set("a")} MERGE (b:{NodeB.Label} {{ pk: \"{NodeB.Pk}\" }}) ON CREATE SET {NodeB.Set("b")} ON MATCH SET {NodeB.Set("b")} MERGE (a)-[:{Relationship.Type}]->(b);";
+        public Node NodeA { get; }
+        
+        public Node NodeB { get; }
+        
+        public Relationship Relationship { get; }
+    }
+    
+    public abstract record GenericTriple<TNodeA, TNodeB, TRel>(TNodeA NodeA, TNodeB NodeB, TRel Relationship) : ITriple
+        where TNodeA: Node
+        where TNodeB: Node
+        where TRel: Relationship
+    {
+        Node ITriple.NodeA => NodeA;
+        Node ITriple.NodeB => NodeB;
+        Relationship ITriple.Relationship => Relationship;
     }
 
     // Structure
 
-    public record TripleDependsOnProject : Triple
-    {
-        public TripleDependsOnProject(
-            ProjectNode projectA,
-            ProjectNode projectB)
-            : base(projectA, projectB, new DependsOnRelationship())
-        { }
-    }
+    public record TripleDependsOnProject(ProjectNode NodeA, ProjectNode NodeB) : 
+        GenericTriple<ProjectNode, ProjectNode, DependsOnRelationship>(NodeA, NodeB, DependsOnRelationship.Instance);
 
-    public record TripleDependsOnPackage : Triple
-    {
-        public TripleDependsOnPackage(
-            ProjectNode projectA,
-            PackageNode packageB)
-            : base(projectA, packageB, new DependsOnRelationship())
-        { }
-    }
+    public record TripleDependsOnPackage(ProjectNode NodeA,
+        PackageNode NodeB) : GenericTriple<ProjectNode, PackageNode, DependsOnRelationship>(NodeA, NodeB, DependsOnRelationship.Instance);
 
-    public record TripleIncludedIn : Triple
+    public record TripleIncludedIn : GenericTriple<Node, FolderNode, IncludedInRelationship>
     {
         public TripleIncludedIn(
             ProjectNode contentA,
             FolderNode contentB)
-            : base(contentA, contentB, new IncludedInRelationship())
+            : base(contentA, contentB, IncludedInRelationship.Instance)
         { }
 
         public TripleIncludedIn(
             FolderNode contentA,
             FolderNode contentB)
-            : base(contentA, contentB, new IncludedInRelationship())
+            : base(contentA, contentB, IncludedInRelationship.Instance)
         { }
 
         public TripleIncludedIn(
             FileNode contentA,
             FolderNode contentB)
-            : base(contentA, contentB, new IncludedInRelationship())
+            : base(contentA, contentB, IncludedInRelationship.Instance)
         { }
     }
 
-    public record TripleDeclaredAt : Triple
-    {
-        public TripleDeclaredAt(
-            TypeNode typeA,
-            FileNode fileB)
-            : base(typeA, fileB, new DeclaredAtRelationship())
-        { }
-    }
+    public record TripleDeclaredAt(TypeNode NodeA,
+        FileNode NodeB) : GenericTriple<TypeNode, FileNode, DeclaredAtRelationship>(NodeA, NodeB, DeclaredAtRelationship.Instance);
 
     // Code
 
-    public record TripleInvoke : Triple
-    {
-        public TripleInvoke(
-            MethodNode methodA,
-            MethodNode methodB)
-            : base(methodA, methodB, new InvokeRelationship())
-        { }
-    }
+    public record TripleInvoke(MethodNode NodeA,
+        MethodNode NodeB) : GenericTriple<MethodNode, MethodNode, InvokeRelationship>(NodeA, NodeB, InvokeRelationship.Instance);
 
-    public record TripleHave : Triple
-    {
-        public TripleHave(
-            TypeNode typeA,
-            MethodNode methodB)
-            : base(typeA, methodB, new HaveRelationship())
-        { }
-    }
+    public record TripleHave(TypeNode NodeA,
+        MethodNode NodeB) : GenericTriple<TypeNode, MethodNode, HaveRelationship>(NodeA, NodeB, HaveRelationship.Instance);
 
-    public record TripleConstruct : Triple
+    public record TripleConstruct(MethodNode NodeA, ClassNode NodeB)
+        : GenericTriple<MethodNode, ClassNode, ConstructRelationship>(NodeA, NodeB, ConstructRelationship.Instance)
     {
         //public TripleConstruct(
         //    ClassNode classA,
         //    ClassNode classB)
         //    : base(classA, classB, new ConstructRelationship())
         //{ }
-
-        public TripleConstruct(
-            MethodNode methodA,
-            ClassNode classB)
-            : base(methodA, classB, new ConstructRelationship())
-        { }
     }
 
-    public record TripleOfType : Triple
+    public record TripleOfType : GenericTriple<TypeNode, TypeNode, OfTypeRelationship>
     {
         public TripleOfType(
             ClassNode classA,

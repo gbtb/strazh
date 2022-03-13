@@ -9,9 +9,9 @@ namespace Strazh.Analysis;
 public class MetadataReferenceVisitor
 {
     private readonly ProjectNode _projectNode;
-    private readonly List<Triple> _triples;
+    private readonly List<ITriple> _triples;
 
-    public MetadataReferenceVisitor(ProjectNode projectNode, List<Triple> triples)
+    public MetadataReferenceVisitor(ProjectNode projectNode, List<ITriple> triples)
     {
         _projectNode = projectNode;
         _triples = triples;

@@ -111,7 +111,7 @@ namespace Strazh.Analysis
         /// <summary>
         /// Entry to analyze class or interface
         /// </summary>
-        public static void AnalyzeTree<T>(IList<Triple> triples, SyntaxTree st, SemanticModel sem, FolderNode rootFolder)
+        public static void AnalyzeTree<T>(IList<ITriple> triples, SyntaxTree st, SemanticModel sem, FolderNode rootFolder)
             where T : TypeDeclarationSyntax
         {
             var root = st.GetRoot();
@@ -150,7 +150,7 @@ namespace Strazh.Analysis
         /// <summary>
         /// Type inherited from BaseType
         /// </summary>
-        public static void GetInherits(IList<Triple> triples, TypeDeclarationSyntax declaration, SemanticModel sem, TypeNode node)
+        public static void GetInherits(IList<ITriple> triples, TypeDeclarationSyntax declaration, SemanticModel sem, TypeNode node)
         {
             if (declaration.BaseList != null)
             {
@@ -172,7 +172,7 @@ namespace Strazh.Analysis
         /// <summary>
         /// Class or Interface have some method AND some method can call another method AND some method can creates an object of class
         /// </summary>
-        public static void GetMethodsAll(IList<Triple> triples, TypeDeclarationSyntax declaration, SemanticModel sem, TypeNode node)
+        public static void GetMethodsAll(IList<ITriple> triples, TypeDeclarationSyntax declaration, SemanticModel sem, TypeNode node)
         {
             var methods = declaration.DescendantNodes().OfType<MethodDeclarationSyntax>();
             foreach (var method in methods)
