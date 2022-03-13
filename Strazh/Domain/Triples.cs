@@ -1,27 +1,14 @@
 namespace Strazh.Domain
 {
-    public abstract class Triple
+    public abstract record Triple(Node NodeA, Node NodeB, Relationship Relationship)
     {
-        public Node NodeA { get; set; }
-
-        public Node NodeB { get; set; }
-
-        public Relationship Relationship { get; set; }
-
-        protected Triple(Node nodeA, Node nodeB, Relationship relationship)
-        {
-            NodeA = nodeA;
-            NodeB = nodeB;
-            Relationship = relationship;
-        }
-
-        public override string ToString()
-            => $"MERGE (a:{NodeA.Label} {{ pk: \"{NodeA.Pk}\" }}) ON CREATE SET {NodeA.Set("a")} ON MATCH SET {NodeA.Set("a")} MERGE (b:{NodeB.Label} {{ pk: \"{NodeB.Pk}\" }}) ON CREATE SET {NodeB.Set("b")} ON MATCH SET {NodeB.Set("b")} MERGE (a)-[:{Relationship.Type}]->(b);";
+        //public override string ToString()
+        //    => $"MERGE (a:{NodeA.Label} {{ pk: \"{NodeA.Pk}\" }}) ON CREATE SET {NodeA.Set("a")} ON MATCH SET {NodeA.Set("a")} MERGE (b:{NodeB.Label} {{ pk: \"{NodeB.Pk}\" }}) ON CREATE SET {NodeB.Set("b")} ON MATCH SET {NodeB.Set("b")} MERGE (a)-[:{Relationship.Type}]->(b);";
     }
 
     // Structure
 
-    public class TripleDependsOnProject : Triple
+    public record TripleDependsOnProject : Triple
     {
         public TripleDependsOnProject(
             ProjectNode projectA,
@@ -30,7 +17,7 @@ namespace Strazh.Domain
         { }
     }
 
-    public class TripleDependsOnPackage : Triple
+    public record TripleDependsOnPackage : Triple
     {
         public TripleDependsOnPackage(
             ProjectNode projectA,
@@ -39,7 +26,7 @@ namespace Strazh.Domain
         { }
     }
 
-    public class TripleIncludedIn : Triple
+    public record TripleIncludedIn : Triple
     {
         public TripleIncludedIn(
             ProjectNode contentA,
@@ -60,7 +47,7 @@ namespace Strazh.Domain
         { }
     }
 
-    public class TripleDeclaredAt : Triple
+    public record TripleDeclaredAt : Triple
     {
         public TripleDeclaredAt(
             TypeNode typeA,
@@ -71,7 +58,7 @@ namespace Strazh.Domain
 
     // Code
 
-    public class TripleInvoke : Triple
+    public record TripleInvoke : Triple
     {
         public TripleInvoke(
             MethodNode methodA,
@@ -80,7 +67,7 @@ namespace Strazh.Domain
         { }
     }
 
-    public class TripleHave : Triple
+    public record TripleHave : Triple
     {
         public TripleHave(
             TypeNode typeA,
@@ -89,7 +76,7 @@ namespace Strazh.Domain
         { }
     }
 
-    public class TripleConstruct : Triple
+    public record TripleConstruct : Triple
     {
         //public TripleConstruct(
         //    ClassNode classA,
@@ -104,7 +91,7 @@ namespace Strazh.Domain
         { }
     }
 
-    public class TripleOfType : Triple
+    public record TripleOfType : Triple
     {
         public TripleOfType(
             ClassNode classA,

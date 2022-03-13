@@ -1,39 +1,50 @@
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Strazh.Domain
 {
-    public abstract class Node
+    public abstract record Node(string FullName, string Name)
     {
+        private string? _pk;
         public abstract string Label { get; }
-
-        public virtual string FullName { get; }
-
-        public virtual string Name { get; }
 
         /// <summary>
         /// Primary Key used to compare Matching of nodes on MERGE operation
         /// </summary>
-        public virtual string Pk { get; protected set; }
-
-        public Node(string fullName, string name)
+        public string Pk
         {
-            FullName = fullName;
-            Name = name;
-            SetPrimaryKey();
+            get
+            {
+                if (_pk == null)
+                    _pk = GetPrimaryKey();
+
+                return _pk;
+            } 
         }
 
-        protected virtual void SetPrimaryKey()
+        protected virtual string GetPrimaryKey()
         {
-            Pk = FullName.GetHashCode().ToString();
+            return FullName.GetHashCode().ToString();
         }
 
-        public virtual string Set(string node)
-            => $"{node}.pk = \"{Pk}\", {node}.fullName = \"{FullName}\", {node}.name = \"{Name}\"";
+        public virtual (string, IDictionary<string, object>) GetSetQueryAndParameters(string node)
+        {
+            var upNode = node.ToUpper();
+            var dict = new Dictionary<string, object>(3)
+            {
+                {$"node{upNode}Pk", Pk},
+                {$"node{upNode}FullName", FullName},
+                {$"node{upNode}Name", Name}
+            };
+            var query = $"{node}.pk = $node{upNode}Pk, {node}.fullName = $node{upNode}FullName, {node}.name = $node{upNode}Name";
+
+            return (query, dict);
+        }
     }
 
     // Code
 
-    public abstract class CodeNode : Node
+    public abstract record CodeNode : Node
     {
         public CodeNode(string fullName, string name, string[] modifiers = null)
             : base(fullName, name)
@@ -44,11 +55,20 @@ namespace Strazh.Domain
 
         public string Modifiers { get; }
 
-        public override string Set(string node)
-            => $"{base.Set(node)}{(string.IsNullOrEmpty(Modifiers) ? "" : $", {node}.modifiers = \"{Modifiers}\"")}";
+        public override (string, IDictionary<string, object>) GetSetQueryAndParameters(string node)
+        {
+            var upNode = node.ToUpper();
+            var (query, parameters) = base.GetSetQueryAndParameters(node);
+            if (string.IsNullOrEmpty(Modifiers))
+                return (query, parameters);
+
+            query = $"{query}, {node}.modifiers = $node{upNode}Modifiers";
+            parameters.Add($"node{upNode}Modifiers", Modifiers);
+            return (query, parameters);
+        }
     }
 
-    public abstract class TypeNode : CodeNode
+    public abstract record TypeNode : CodeNode
     {
         public TypeNode(string fullName, string name, string[] modifiers = null)
             : base(fullName, name, modifiers)
@@ -56,7 +76,7 @@ namespace Strazh.Domain
         }
     }
 
-    public class ClassNode : TypeNode
+    public record ClassNode : TypeNode
     {
         public ClassNode(string fullName, string name, string[] modifiers = null)
             : base(fullName, name, modifiers)
@@ -66,7 +86,7 @@ namespace Strazh.Domain
         public override string Label { get; } = "Class";
     }
 
-    public class InterfaceNode : TypeNode
+    public record InterfaceNode : TypeNode
     {
         public InterfaceNode(string fullName, string name, string[] modifiers = null)
             : base(fullName, name, modifiers)
@@ -76,14 +96,13 @@ namespace Strazh.Domain
         public override string Label { get; } = "Interface";
     }
 
-    public class MethodNode : CodeNode
+    public record MethodNode : CodeNode
     {
         public MethodNode(string fullName, string name, (string name, string type)[] args, string returnType, string[] modifiers = null)
             : base(fullName, name, modifiers)
         {
             Arguments = string.Join(", ", args.Select(x => $"{x.type} {x.name}"));
             ReturnType = returnType;
-            SetPrimaryKey();
         }
 
         public override string Label { get; } = "Method";
@@ -92,63 +111,60 @@ namespace Strazh.Domain
 
         public string ReturnType { get; }
 
-        public override string Set(string node)
-            => $"{base.Set(node)}, {node}.returnType = \"{ReturnType}\", {node}.arguments = \"{Arguments}\"";
-
-        protected override void SetPrimaryKey()
+        public override (string, IDictionary<string, object>) GetSetQueryAndParameters(string node)
         {
-            Pk = $"{FullName}{Arguments}{ReturnType}".GetHashCode().ToString();
+            var upNode = node.ToUpper();
+            var (query, parameters) = base.GetSetQueryAndParameters(node);
+
+            query = $"{query}, {node}.returnType = $node{upNode}ReturnType, {node}.arguments = $node{upNode}Arguments";
+            parameters.Add($"node{upNode}ReturnType", ReturnType);
+            parameters.Add($"node{upNode}Arguments", Arguments);
+            return (query, parameters);
+        }
+        
+        protected override string GetPrimaryKey()
+        {
+            return $"{FullName}{Arguments}{ReturnType}".GetHashCode().ToString();
         }
     }
 
     // Structure
 
-    public class FileNode : Node
+    public record FileNode(string FullName, string Name) : Node(FullName, Name)
     {
-        public FileNode(string fullName, string name)
-            : base(fullName, name) { }
-
         public override string Label { get; } = "File";
     }
 
-    public class FolderNode : Node
+    public record FolderNode(string FullName, string Name) : Node(FullName, Name)
     {
-        public FolderNode(string fullName, string name)
-            : base(fullName, name) { }
-
         public override string Label { get; } = "Folder";
     }
 
-    public class ProjectNode : Node
+    public record ProjectNode(string FullName, string Name) : Node(FullName, Name)
     {
         public ProjectNode(string name)
             : this(name, name) { }
 
-        public ProjectNode(string fullName, string name)
-            : base(fullName, name) { }
-
         public override string Label { get; } = "Project";
     }
 
-    public class PackageNode : Node
+    public record PackageNode(string FullName, string Name, string Version) : Node(FullName, Name)
     {
-        public PackageNode(string fullName, string name, string version)
-            : base(fullName, name)
-        {
-            Version = version;
-            SetPrimaryKey();
-        }
-
         public override string Label { get; } = "Package";
 
-        public string Version { get; }
-
-        public override string Set(string node)
-            => $"{base.Set(node)}, {node}.version = \"{Version}\"";
-
-        protected override void SetPrimaryKey()
+        public override (string, IDictionary<string, object>) GetSetQueryAndParameters(string node)
         {
-            Pk = $"{FullName}{Version}".GetHashCode().ToString();
+            var upNode = node.ToUpper();
+            var (query, parameters) = base.GetSetQueryAndParameters(node);
+
+            query = $"{query}, {node}.version = $node{upNode}Version";
+            parameters.Add($"node{upNode}Version", Version);
+            return (query, parameters);
+        }
+        
+        protected override string GetPrimaryKey()
+        {
+            return $"{FullName}{Version}".GetHashCode().ToString();
         }
     }
 }
